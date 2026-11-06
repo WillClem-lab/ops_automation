@@ -96,23 +96,18 @@ Rules:
 - Do not output introductory conversational text. Return ONLY the Markdown document.
 """
 
-def query_claude_api(prompt_text: str, api_key: str) -> str:
-    """
-    Invokes Anthropic Claude API using standard Python library to avoid external dependency issues.
-    """
-    url = "https://api.anthropic.com/v1/messages"
-    headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
+def query_gemini_api(prompt_text: str, api_key: str) -> str:
+    """Invokes Google Gemini REST API using standard Python libraries."""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    headers = {"Content-Type": "application/json"}
     
     payload = {
-        "model": "claude-3-5-sonnet-20241022",
-        "max_tokens": 2500,
-        "system": SYSTEM_PROMPT,
-        "messages": [
-            {"role": "user", "content": f"Transform these incident notes into an SOP:\n\n{prompt_text}"}
+        "contents": [
+            {
+                "parts": [
+                    {"text": f"{SYSTEM_PROMPT}\n\nTransform these incident notes into an SOP:\n\n{prompt_text}"}
+                ]
+            }
         ]
     }
 
@@ -121,12 +116,9 @@ def query_claude_api(prompt_text: str, api_key: str) -> str:
     try:
         with urllib.request.urlopen(req) as response:
             res_data = json.loads(response.read().decode("utf-8"))
-            return res_data["content"][0]["text"]
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8")
-        sys.exit(f"[ERROR] API Request Failed: HTTP {e.code} - {error_body}")
+            return res_data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
-        sys.exit(f"[ERROR] Unexpected Connection Error: {str(e)}")
+        sys.exit(f"[ERROR] Gemini API Request Failed: {str(e)}")
 
 # ---------------------------------------------------------------------------
 # 3. MAIN EXECUTION PIPELINE
