@@ -23,21 +23,36 @@ Designed to eliminate manual administrative overhead, enforce zero-trust securit
 
 ---
 
-## Governed AI Enablement & Automation (`/ai-governance/`)
+## Governed AI Enablement, Automation, and Autonomous Agents (`/ai-governance/`)
 
-Specialized governance frameworks, data protection guardrails, and workflow definitions for enterprise Large Language Model (LLM) and autonomous agent deployment.
+Specialized governance frameworks, data protection guardrails, production-ready Python autonomous agents, and protocol servers engineered for enterprise Large Language Model (LLM) deployment across SOC 2 and HIPAA environments.
 
 ### 1. Enterprise AI Acceptable Use Policy (`/ai-governance/AI_Acceptable_Use_Policy.md`)
-* **Purpose:** Formal operational framework establishing prompt data boundaries, approved AI tool catalogs (Claude, Notion AI), and vendor Zero-Data-Retention (ZDR) baselines.
-* **Key Controls:** Prohibits PHI/PII and credential inputs; mandates SSO/SCIM provisioning and LLM model training opt-outs.
+- **Purpose:** Formal operational framework establishing prompt data boundaries, approved AI tool catalogs (Claude, Notion AI), and vendor Zero-Data-Retention (ZDR) baselines.
+- **Key Controls:** Prohibits PHI/PII and credential inputs; mandates SSO/SCIM provisioning and LLM model training opt-outs.
 
 ### 2. Governed Helpdesk Triage Workflow (`/ai-governance/n8n_Ticket_Triage_Workflow.json`)
-* **Purpose:** Exportable n8n workflow definition utilizing LLM API nodes for automated ticket classification and routing.
-* **Key Controls:** Enforces Human-in-the-Loop (HITL) Slack admin approval gates before execution and logs timestamped audit events.
+- **Purpose:** Exportable n8n workflow definition utilizing LLM API nodes for automated ticket classification and routing.
+- **Key Controls:** Enforces Human-in-the-Loop (HITL) Slack admin approval gates before execution and logs timestamped audit events.
 
-### 3. Module Overview & Integration Guide (`/ai-governance/README.md`)
-* **Purpose:** Architectural documentation detailing least-privilege API scoping, HITL checkpoints, and step-by-step n8n import steps.
+### 3. Automated Knowledge Base & SOP Generator Agent (`/ai-governance/workflows/kb_generator_agent.py`)
+- **Purpose:** Autonomous documentation engine that converts raw incident logs and triage notes into standardized Markdown runbooks.
+- **Key Controls:** Includes regex-based pre-flight redaction guardrails for PII/PHI, IPv4 addresses, and administrative credentials before invoking the Gemini API (`gemini-3.8-flash`).
 
+### 4. Governed Access Request & Risk Evaluation Agent (`/ai-governance/workflows/saas_access_agent.py`)
+- **Purpose:** Risk evaluation engine that parses end-user SaaS access requests against SOC 2 and HIPAA governance matrices.
+- **Key Controls:** Detects PHI/PII hazards, mandates BAA requirements and SSO/SCIM enforcement, and generates structured JSON outputs flagging mandatory Human-in-the-Loop (HITL) admin approvals.
+
+### 5. Self-Healing Endpoint Remediation Agent (`/ai-governance/workflows/remediation_agent.py`)
+- **Purpose:** Remediation engine that ingests non-compliance JSON logs, diagnoses security gaps (e.g., missing BitLocker encryption), and stages targeted PowerShell remediation payloads.
+- **Key Controls:** Enforces HITL authorization gates before executing high-risk administrative actions and appends immutable audit logs (`remediation_audit.log`).
+
+### 6. Enterprise IT Operations Model Context Protocol Server (`/ai-governance/mcp-server/it_ops_mcp_server.py`)
+- **Purpose:** FastMCP server exposing local user lifecycle datasets, remediation audit trails, and compliance framework mappings (SOC 2, HIPAA, NIST RMF) over STDIO / JSON-RPC.
+- **Key Controls:** Enables LLM assistants (e.g., Claude Desktop, Cursor) to execute secure, read-only queries against local IT telemetry without direct system execution access.
+
+### 7. Module Overview & Integration Guide (`/ai-governance/README.md`)
+- **Purpose:** Architectural documentation detailing least-privilege API scoping, HITL checkpoints, and step-by-step n8n import steps.
 ---
 
 ## Healthcare & Regulated Environment (`/healthcare-compliance/`)
