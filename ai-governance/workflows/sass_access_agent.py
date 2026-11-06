@@ -94,7 +94,7 @@ def main():
     evaluation = evaluate_access_request(args.request, api_key)
 
     print("\n" + "="*60)
-    print(" ???  SAAS ACCESS RISK EVALUATION REPORT")
+    print("=== SAAS ACCESS RISK EVALUATION REPORT ===")
     print("="*60)
     print(f"Target App:                {evaluation.get('app_name')}")
     print(f"Risk Level:                {evaluation.get('risk_score')}")
