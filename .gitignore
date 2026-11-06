@@ -218,3 +218,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ==========================================
+# Custom IT Ops & Security Ignore Rules
+# ==========================================
+
+# PowerShell / OS temporary files
+*.log
+*.tmp
+*.csv
+*.json
+!package.json
+
+# Local Environment & Secrets
+.env
+config.local.ps1
+credentials.json
+*_Audit_*.json
+
+# System & IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
