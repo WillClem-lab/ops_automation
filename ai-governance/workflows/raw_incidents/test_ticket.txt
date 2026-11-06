@@ -1,0 +1,4 @@
+Incident Log:
+User john.doe@example.com reported repeated 401 unauthorized errors connecting to Entra ID from IP 10.0.0.45.
+Found stale OAuth refresh token in credential manager and expired conditional access session.
+Executed Revoke-MgUserSignInSession -UserId "john.doe@example.com" and cleared Windows Credential Manager.
