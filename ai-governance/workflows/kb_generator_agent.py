@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Automated Knowledge Base & Runbook Generator Agent
+Automated Knowledge Base & Runbook Generator Agent (Gemini Version)
 Document ID: AGENT-KB-001
 Owner: IT Operations & AI Governance
 
 Description:
     Ingests raw incident notes, ticket logs, or unformatted post-mortem text,
     runs a pre-flight guardrail check to redact sensitive inputs (credentials, 
-    IPs, PII/PHI), and invokes an LLM API to output a standardized, production-ready 
-    Markdown Standard Operating Procedure (SOP) / Runbook.
+    IPs, PII/PHI), and invokes the Google Gemini API to output a standardized, 
+    production-ready Markdown Standard Operating Procedure (SOP) / Runbook.
 
 Usage:
-    python kb_generator_agent.py --input raw_ticket.txt --output docs/SOP_Remediation_Generated.md
+    python ai-governance/workflows/kb_generator_agent.py --input raw_ticket.txt --output docs/SOP_Remediation_Generated.md
 """
 
 import os
@@ -34,26 +34,20 @@ PATTERNS = {
 }
 
 def sanitize_input(text: str) -> tuple[str, int]:
-    """
-    Scans and redacts sensitive data categories prior to LLM processing.
-    Returns sanitized text and total count of redacted items.
-    """
+    """Scans and redacts sensitive data categories prior to LLM processing."""
     redaction_count = 0
     sanitized = text
 
-    # Redact credentials/keys
     for match in PATTERNS["api_key"].finditer(sanitized):
         sanitized = sanitized.replace(match.group(2), "[REDACTED_CREDENTIAL]")
         redaction_count += 1
 
-    # Redact IPv4 addresses
     ipv4_matches = PATTERNS["ipv4"].findall(sanitized)
     for ip in set(ipv4_matches):
-        if not ip.startswith("127.0."):  # Keep loopback intact if needed
+        if not ip.startswith("127.0."):
             sanitized = sanitized.replace(ip, "[REDACTED_IP_ADDRESS]")
             redaction_count += 1
 
-    # Redact SSNs
     for ssn in set(PATTERNS["ssn"].findall(sanitized)):
         sanitized = sanitized.replace(ssn, "[REDACTED_SSN]")
         redaction_count += 1
@@ -61,7 +55,7 @@ def sanitize_input(text: str) -> tuple[str, int]:
     return sanitized, redaction_count
 
 # ---------------------------------------------------------------------------
-# 2. LLM EXECUTION ENGINE (ANTHROPIC CLAUDE API)
+# 2. LLM EXECUTION ENGINE (GOOGLE GEMINI API)
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """You are an expert IT Operations & Compliance Documentation Agent.
@@ -97,7 +91,7 @@ Rules:
 """
 
 def query_gemini_api(prompt_text: str, api_key: str) -> str:
-    """Invokes Google Gemini REST API using standard Python libraries."""
+    """Invokes Google Gemini API via REST payload."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     
@@ -117,8 +111,11 @@ def query_gemini_api(prompt_text: str, api_key: str) -> str:
         with urllib.request.urlopen(req) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             return res_data["candidates"][0]["content"]["parts"][0]["text"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        sys.exit(f"[ERROR] Gemini API Request Failed: HTTP {e.code} - {error_body}")
     except Exception as e:
-        sys.exit(f"[ERROR] Gemini API Request Failed: {str(e)}")
+        sys.exit(f"[ERROR] Unexpected Connection Error: {str(e)}")
 
 # ---------------------------------------------------------------------------
 # 3. MAIN EXECUTION PIPELINE
@@ -130,9 +127,9 @@ def main():
     parser.add_argument("--output", required=True, help="Path to save generated Markdown SOP")
     args = parser.parse_args()
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        sys.exit("[ERROR] Environment variable ANTHROPIC_API_KEY is not set.")
+        sys.exit("[ERROR] Environment variable GEMINI_API_KEY is not set.")
 
     if not os.path.exists(args.input):
         sys.exit(f"[ERROR] Input file not found: {args.input}")
@@ -145,10 +142,9 @@ def main():
     sanitized_content, redactions = sanitize_input(raw_content)
     print(f"[+] Guardrail Complete: Redacted {redactions} sensitive data instances.")
 
-    print("[*] Querying Governed LLM Agent to synthesize SOP document...")
-    markdown_output = query_claude_api(sanitized_content, api_key)
+    print("[*] Querying Gemini AI Agent to synthesize SOP document...")
+    markdown_output = query_gemini_api(sanitized_content, api_key)
 
-    # Ensure target output directory exists
     output_dir = os.path.dirname(args.output)
     if output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
