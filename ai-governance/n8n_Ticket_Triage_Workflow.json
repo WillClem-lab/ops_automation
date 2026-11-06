@@ -1,1 +1,112 @@
-
+{
+  "name": "Governed AI Ticket Triage & HITL Approval Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ticket-intake",
+        "options": {}
+      },
+      "id": "node-webhook-intake",
+      "name": "Webhook Ticket Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "options": {
+          "systemMessage": "You are a governed IT Helpdesk AI Assistant. Categorize incoming tickets into [Identity, Endpoint, Access Request, Security Alert]. Output JSON only: {\"category\": \"string\", \"urgency\": \"Low|Medium|High\", \"suggested_action\": \"string\", \"requires_human_approval\": true}. Never process PHI/PII or raw credentials."
+        }
+      },
+      "id": "node-llm-classifier",
+      "name": "LLM Ticket Classifier Node",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.requires_human_approval }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "node-check-hitl",
+      "name": "Requires Admin Approval?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#it-admin-approvals",
+        "text": "=⚠️ *AI Triage Approval Required*\n• **Ticket ID:** {{ $('Webhook Ticket Intake').item.json.ticket_id }}\n• **Category:** {{ $json.category }}\n• **Urgency:** {{ $json.urgency }}\n• **Proposed Action:** {{ $json.suggested_action }}\n\nReply `:white_check_mark:` to approve execution or `:x:` to reject.",
+        "otherOptions": {}
+      },
+      "id": "node-slack-hitl",
+      "name": "Send Slack Admin HITL Prompt",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [930, 200]
+    },
+    {
+      "parameters": {
+        "fileName": "/var/log/n8n/ai_governance_audit.log",
+        "options": {}
+      },
+      "id": "node-audit-logger",
+      "name": "Audit Trail Logger",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [930, 420]
+    }
+  ],
+  "connections": {
+    "Webhook Ticket Intake": {
+      "main": [
+        [
+          {
+            "node": "LLM Ticket Classifier Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Ticket Classifier Node": {
+      "main": [
+        [
+          {
+            "node": "Requires Admin Approval?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requires Admin Approval?": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Admin HITL Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Trail Logger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
