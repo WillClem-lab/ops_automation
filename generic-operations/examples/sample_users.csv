@@ -1,0 +1,5 @@
+```csv
+UserPrincipalName,FirstName,LastName,Department,Role,Status
+jdoe@example.com,John,Doe,Engineering,Software Engineer,Active
+asmith@example.com,Alice,Smith,Finance,Financial Analyst,Active
+mbrown@example.com,Marcus,Brown,Sales,Account Executive,Pending_Offboard
