@@ -114,7 +114,7 @@ def main():
     write_audit_trail(plan)
 
     print("\n" + "="*60)
-    print(" ???  SELF-HEAVY ENDPOINT REMEDIATION PLAN")
+    print("===SELF-HEAVY ENDPOINT REMEDIATION PLAN===")
     print("="*60)
     print(f"Target Asset:          {plan.get('target_device_or_user')}")
     print(f"Compliance Gap:        {plan.get('compliance_gap')}")
