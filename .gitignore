@@ -241,3 +241,11 @@ credentials.json
 .idea/
 .DS_Store
 Thumbs.db
+
+# ==========================================
+# ATS Scraper Privacy & State Exclusions
+# ==========================================
+ai-governance/workflows/ats_scraper/seen_jobs.json
+ai-governance/workflows/ats_scraper/candidate_profile.json
+ai-governance/workflows/ats_scraper/*.log
+.env

@@ -1,0 +1,12 @@
+display_information:
+  name: ATS Job Alert Bot
+  description: Governed ATS job scraper notification bot
+features:
+  incoming_webhooks:
+    hooks:
+      - title: ATS Job Alerts
+        target_channel_id: ""
+oauth_config:
+  scopes:
+    bot:
+      - incoming-webhook
