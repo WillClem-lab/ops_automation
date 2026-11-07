@@ -1,0 +1,46 @@
+{
+  "name": "Governed ATS Job Scraper and AI Fit Evaluator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { company: 'nadia-care', ats: 'greenhouse' } },\n  { json: { company: 'torii', ats: 'greenhouse' } },\n  { json: { company: 'rippling', ats: 'lever' } },\n  { json: { company: 'ashby', ats: 'ashby' } }\n];"
+      },
+      "id": "target-companies",
+      "name": "Target Company Slugs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://boards-api.greenhouse.io/v1/boards/{{ $json.company }}/jobs?content=true",
+        "options": {}
+      },
+      "id": "fetch-ats",
+      "name": "Fetch ATS Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [670, 300]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [[{ "node": "Target Company Slugs", "type": "main", "index": 0 }]]
+    },
+    "Target Company Slugs": {
+      "main": [[{ "node": "Fetch ATS Endpoint", "type": "main", "index": 0 }]]
+    }
+  }
+}
