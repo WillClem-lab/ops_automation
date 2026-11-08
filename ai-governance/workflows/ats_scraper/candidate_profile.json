@@ -1,12 +1,8 @@
 {
-  "experience": "18+ years IT infrastructure, 12+ years sole IT resource",
-  "education": "B.S. Cloud and Network Engineering (WGU in progress)",
-  "certifications": ["Security+", "Network+", "A+", "CSIS", "ITIL 4 Foundation", "NIST RMF"],
-  "core_skills": ["Active Directory", "Entra ID", "M365", "PowerShell", "Python", "Model Context Protocol", "n8n"],
-  "compliance_knowledge": ["HIPAA  164.312", "SOC 2 CC6.1/CC6.8", "HITRUST"],
-  "preferences": {
-    "work_location": "Remote (US)",
-    "target_salary_range": "$60k-$135k+",
-    "clearance_eligibility": "Public Trust or standard background check eligible"
-  }
+  "target_roles": ["Systems Administrator", "IT Operations Lead", "Infrastructure Engineer", "Cloud Engineer"],
+  "core_skills": ["PowerShell", "Python", "Microsoft 365", "Entra ID", "Intune", "n8n", "MCP"],
+  "certifications": ["CompTIA Security+", "Network+", "A+", "CSIS", "NIST RMF"],
+  "experience_years": 18,
+  "preferred_work_mode": "Remote",
+  "target_salary_min": 65000
 }

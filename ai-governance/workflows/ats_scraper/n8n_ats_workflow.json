@@ -4,43 +4,159 @@
     {
       "parameters": {
         "rule": {
-          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
         }
       },
       "id": "cron-trigger",
       "name": "Every 6 Hours",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
-      "position": [250, 300]
+      "position": [
+        250,
+        300
+      ]
     },
     {
       "parameters": {
-        "jsCode": "return [\n  { json: { company: 'nadia-care', ats: 'greenhouse' } },\n  { json: { company: 'torii', ats: 'greenhouse' } },\n  { json: { company: 'rippling', ats: 'lever' } },\n  { json: { company: 'ashby', ats: 'ashby' } }\n];"
+        "jsCode": "return [\n  // Healthtech & Regulated Operations\n  { json: { company: 'nadia-care', ats: 'greenhouse' } },\n  { json: { company: 'flatiron', ats: 'greenhouse' } },\n  { json: { company: 'ro', ats: 'greenhouse' } },\n  { json: { company: 'modern-health', ats: 'lever' } },\n\n  // Cybersecurity & Identity\n  { json: { company: 'safebreach', ats: 'greenhouse' } },\n  { json: { company: 'specterops', ats: 'greenhouse' } },\n  { json: { company: 'wiz', ats: 'greenhouse' } },\n  { json: { company: 'snyk', ats: 'greenhouse' } },\n  { json: { company: 'cloudflare', ats: 'greenhouse' } },\n  { json: { company: 'okta', ats: 'greenhouse' } },\n  { json: { company: '1password', ats: 'lever' } },\n  { json: { company: 'vanta', ats: 'ashby' } },\n  { json: { company: 'drata', ats: 'ashby' } },\n\n  // Cloud Infrastructure & IT Operations\n  { json: { company: 'hashicorp', ats: 'greenhouse' } },\n  { json: { company: 'gitlab', ats: 'greenhouse' } },\n  { json: { company: 'datadog', ats: 'greenhouse' } },\n  { json: { company: 'elastic', ats: 'greenhouse' } },\n  { json: { company: 'pagerduty', ats: 'greenhouse' } },\n  { json: { company: 'rippling', ats: 'lever' } },\n  { json: { company: 'automox', ats: 'lever' } },\n  { json: { company: 'linear', ats: 'ashby' } },\n\n  // SaaS Governance & Enterprise Tools\n  { json: { company: 'torii', ats: 'greenhouse' } },\n  { json: { company: 'notion', ats: 'greenhouse' } },\n  { json: { company: 'figma', ats: 'greenhouse' } },\n  { json: { company: 'airtable', ats: 'greenhouse' } },\n  { json: { company: 'ramp', ats: 'ashby' } },\n  { json: { company: 'ashby', ats: 'ashby' } },\n  { json: { company: 'anthropic', ats: 'ashby' } }\n];"
       },
       "id": "target-companies",
       "name": "Target Company Slugs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [450, 300]
+      "position": [
+        450,
+        300
+      ]
     },
     {
       "parameters": {
-        "url": "=https://boards-api.greenhouse.io/v1/boards/{{ $json.company }}/jobs?content=true",
+        "url": "={{ $json.ats === 'lever' ? 'https://api.lever.co/v0/postings/' + $json.company + '?mode=json' : ($json.ats === 'ashby' ? 'https://api.ashbyhq.com/posting-api/job-board/' + $json.company : 'https://boards-api.greenhouse.io/v1/boards/' + $json.company + '/jobs?content=true') }}",
         "options": {}
       },
       "id": "fetch-ats",
       "name": "Fetch ATS Endpoint",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [670, 300]
+      "position": [
+        670,
+        300
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "command": "python3 /files/ops_automation/ai-governance/workflows/ats_scraper/ats_job_filter.py"
+      },
+      "id": "filter-dedup",
+      "name": "Filter & Deduplicate Jobs",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        890,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "python3 /files/ops_automation/ai-governance/workflows/ats_scraper/evaluator.py"
+      },
+      "id": "evaluator",
+      "name": "Gemini Fit Evaluator",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1110,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"🎯 *ATS Pipeline Alert*: New high-fit job opportunities evaluated and logged.\\n\" + JSON.stringify($json, null, 2)\n}",
+        "options": {}
+      },
+      "id": "slack-alert",
+      "name": "Slack Webhook Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1330,
+        300
+      ]
     }
   ],
   "connections": {
     "Every 6 Hours": {
-      "main": [[{ "node": "Target Company Slugs", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Target Company Slugs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Target Company Slugs": {
-      "main": [[{ "node": "Fetch ATS Endpoint", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Fetch ATS Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch ATS Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Filter & Deduplicate Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Deduplicate Jobs": {
+      "main": [
+        [
+          {
+            "node": "Gemini Fit Evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Fit Evaluator": {
+      "main": [
+        [
+          {
+            "node": "Slack Webhook Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   }
 }
