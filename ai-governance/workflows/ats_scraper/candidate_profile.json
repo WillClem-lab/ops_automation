@@ -1,8 +1,11 @@
 {
   "target_roles": ["Systems Administrator", "IT Operations Lead", "Infrastructure Engineer", "Cloud Engineer"],
+  "experience": "18+ years IT infrastructure, 12+ years sole IT resource",
   "core_skills": ["PowerShell", "Python", "Microsoft 365", "Entra ID", "Intune", "n8n", "MCP"],
-  "certifications": ["CompTIA Security+", "Network+", "A+", "CSIS", "NIST RMF"],
+  "certifications": ["CompTIA Security+", "Network+", "A+", "CSIS", "ITIL 4 Foundation", "NIST RMF"],
+   "education": "B.S. Cloud and Network Engineering (WGU in progress)",
   "experience_years": 18,
   "preferred_work_mode": "Remote",
   "target_salary_min": 65000
 }
+ 
